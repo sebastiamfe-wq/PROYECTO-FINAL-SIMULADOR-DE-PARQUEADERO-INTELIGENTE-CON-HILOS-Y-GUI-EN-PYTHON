@@ -9,3 +9,16 @@ import csv #Permite leer y escribir datos en forma de tabla, como generar un arc
 import os #Permite a nuestro codigo interactuar con el sistema operativo, por ejemplo agregar un archivo .csv a nuestra carpeta de proyecto.
 import tkinter as tk #Permite crear interfazes graficas de usuario(GUI) y cada vez que lo necesite no es necesario escribir tkinter sino solamente tk.
 from tkinter import ttk #Permite separar las logica de un componente de su diseño visual gracias al modulo (ttk).
+
+capacity = 10
+occupied_spaces = 3
+available_spaces = capacity - occupied_spaces
+
+
+print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}")
+print("Entro un vehiculo")
+occupied_spaces += 1
+available_spaces = capacity - occupied_spaces
+occupation_rate = (occupied_spaces / capacity) * 100
+print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}")
+print(f"Ocupacion: {occupation_rate}%")
