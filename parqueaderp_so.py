@@ -10,15 +10,23 @@ import os #Permite a nuestro codigo interactuar con el sistema operativo, por ej
 import tkinter as tk #Permite crear interfazes graficas de usuario(GUI) y cada vez que lo necesite no es necesario escribir tkinter sino solamente tk.
 from tkinter import ttk #Permite separar las logica de un componente de su diseño visual gracias al modulo (ttk).
 
-capacity = 10
-occupied_spaces = 3
-available_spaces = capacity - occupied_spaces
+capacity = 100
+occupied_spaces = 88
 
+if occupied_spaces < capacity:
+    occupied_spaces += 1
+    print("entra") 
+else:
+    print("no entra")
 
-print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}")
-print("Entro un vehiculo")
-occupied_spaces += 1
 available_spaces = capacity - occupied_spaces
-occupation_rate = (occupied_spaces / capacity) * 100
-print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}")
-print(f"Ocupacion: {occupation_rate}%")
+occupied_rate = (occupied_spaces / capacity) * 100
+
+if occupied_rate < 50:
+    status = "Baja"
+elif occupied_rate < 90:
+    status = "Media"
+else:
+    status = "Alta"
+
+print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces} | Ocupacion: {status}({occupied_rate}%)")
