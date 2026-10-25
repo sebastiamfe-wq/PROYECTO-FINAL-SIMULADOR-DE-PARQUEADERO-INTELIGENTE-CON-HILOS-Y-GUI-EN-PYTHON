@@ -15,21 +15,19 @@ capacity = 10 #Se le asigna la capacidad que va a tener el parquadero.
 occupied_spaces = 0 #Representa los espacios que es van a ocupar, por eso se inicializa en cero. 
 available_spaces = capacity - occupied_spaces #Calcula los espacios libres en el parqueadero.  
 vehicles_waiting = 0 #Se le asigna el numero de vehiculos esperando a entrar. 
-total_vehicles = 15 #Variable que simula el total de vehiculos que van a entrar al parqueadero.    
+total_vehicles = 200 #Variable que simula el total de vehiculos que van a entrar al parqueadero.    
 
 #===========
 #El ciclo cumple la funcion de permitir que un vehiculo entre o no.
 #===========
-vehicle_counter = 0
-while vehicle_counter < total_vehicles:
-    vehicle_counter += 1
-    if occupied_spaces < capacity:         
+for vehiculo in range(1, total_vehicles + 1):
+    if occupied_spaces < capacity:
         occupied_spaces += 1
-        available_spaces = capacity - occupied_spaces
-        print(f"Vehiculo {vehicle_counter} entra | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}")
+        available_spaces -= 1
+        print(f"Vehiculo {vehiculo} entra | Ocupados: {occupied_spaces} | Disponibles: {available_spaces}") 
     else:
         vehicles_waiting += 1
-        print(f"Vehiculo {vehicle_counter} no entra, parqueadero lleno")
+        print(f"Vehiculo {vehiculo} no entra, parqueadero lleno")
 
 #===========
 #La condicion evalua respecto al porcentaje de ocupacion (occupied_rate) si la ocupacion es baja, media o alta.
@@ -45,4 +43,4 @@ else:
 #===========
 #Imprime una tabla de control de las plazas, para saber es estado del parqueadero.
 #===========
-print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces} | Ocupacion: {status}({occupied_rate:.1f}%) | Esperaron: {vehicles_waiting}")
+print(f"Capacidad: {capacity} | Ocupados: {occupied_spaces} | Disponibles: {available_spaces} | Ocupacion: {status}({occupied_rate:.1f}%) | Esperando: {vehicles_waiting}")
