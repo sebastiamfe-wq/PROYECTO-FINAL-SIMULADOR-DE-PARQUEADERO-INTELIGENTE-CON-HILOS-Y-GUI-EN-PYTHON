@@ -79,7 +79,7 @@ def main():
     #Imprime una tabla de control de las plazas, para saber el estado del parqueadero.
     #===========
     print()
-    print(f"Capacity: {MAX_CAPACITY} | Occupied: {occupied_spaces} | Availability: {availability_spaces} | Occupation:              {occupation_state}({occupation_rate:.1f}%) | Waiting: {vehicles_waiting}")
+    print(f"Capacity: {MAX_CAPACITY} | Occupied: {occupied_spaces} | Availability: {availability_spaces} | Occupation: {occupation_state}({occupation_rate:.1f}%) | Waiting: {vehicles_waiting}")
     print()
     total_simulation_time = time.time() - start
     print(f"Simulation:{total_simulation_time:.4f}")
