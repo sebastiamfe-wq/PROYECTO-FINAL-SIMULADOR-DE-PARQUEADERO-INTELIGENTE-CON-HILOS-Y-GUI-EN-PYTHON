@@ -26,7 +26,10 @@ def calc_occupation_state(rate):
 
 
 class ParkingLot:
+    """representa un parqueadero con su capacidad, sus espacios ocupados y su registro de vehículos."""
+
     def __init__(self, capacity):
+        """Crea un parqueadero y su registro vacios y se le asigna la capacidad por parametro"""
         self.capacity = capacity
         self.occupied_spaces = 0
         self.vehicle_log = []
@@ -50,52 +53,57 @@ class ParkingLot:
                 waiting += 1
         return waiting
 
-    def parking_vehicle(self):
+    def park_vehicle(self, vehicle_id, arrival_time, parking_time):
+        """Decide si el vehiculo entra o no y lo registra"""
         if self.occupied_spaces < self.capacity:
             self.occupied_spaces += 1
+            vehicle_status = "parked"
+        else:
+            vehicle_status = "waiting"
+        self.vehicle_log.append(
+            {
+                "vehicle_id": vehicle_id,
+                "state": vehicle_status,
+                "arrival_time": arrival_time,
+                "parking_time": parking_time,
+            }
+        )
+        return vehicle_status == "parked"
 
 
 def main():
-    """Funcion principal que contiene toda la logica del programa"""
+    """Ejecuta la simulacion y muestra los resultados"""
     parking_lot = ParkingLot(MAX_CAPACITY)
-    print(parking_lot.capacity)
     random.seed(
         SEED
     )  # La semilla fija hace que cada ejecución produzca los mismos resultados.
     start = time.time()
     for current_vehicle in range(1, TOTAL_VEHICLES + 1):
+        # Cualquier vehiculo llega antes de intentar estacionar, haya espacio o no.
         time.sleep(random.uniform(MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME))
-        arrival_time = (
-            time.time() - start
-        )  # La llegada va antes del if: todo vehículo llega, haya espacio o no.
+        arrival_time = time.time() - start
         random_parking_time = random.randint(MIN_PARKING_TIME, MAX_PARKING_TIME)
-        if  parking_lot.occupied_spaces < parking_lot.capacity:
-            parking_lot.parking_vehicle()
-            vehicle_status = "parked"
+        entered = parking_lot.park_vehicle(
+            current_vehicle, arrival_time, random_parking_time
+        )
+        if entered:
             print(
                 f"[{arrival_time:.2f}] Vehicle {current_vehicle} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {random_parking_time}"
             )
         else:
-            vehicle_status = "waiting"
             print(
                 f"[{arrival_time:.2f}] Vehicle {current_vehicle} doesn't enter, full parking lot | Parking time: {random_parking_time}"
             )
-        parking_lot.vehicle_log.append(
-            {
-                "vehicle_id": current_vehicle,
-                "state": vehicle_status,
-                "arrival_time": arrival_time,
-                "parking_time": random_parking_time,
-            }
-        )
+
     print()
-    rate = parking_lot.calc_occupation_rate()
-    state = calc_occupation_state(rate)
     for vehicle in parking_lot.vehicle_log:
         print(f"Vehicle {vehicle['vehicle_id']}: {vehicle['state']}")
     print()
+
+    occupation_rate = parking_lot.calc_occupation_rate()
+    occupation_state = calc_occupation_state(occupation_rate)
     print(
-        f"Capacity: {MAX_CAPACITY} | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Occupation: {state}({rate:.1f}%) | Waiting: {parking_lot.calc_vehicles_waiting()}",
+        f"Capacity: {parking_lot.capacity} | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Occupation: {occupation_state}({occupation_rate:.1f}%) | Waiting: {parking_lot.calc_vehicles_waiting()}",
         end="\n\n",
     )
     total_simulation_time = time.time() - start
