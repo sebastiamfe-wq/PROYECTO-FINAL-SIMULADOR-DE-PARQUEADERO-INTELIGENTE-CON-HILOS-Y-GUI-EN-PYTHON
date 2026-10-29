@@ -1,13 +1,20 @@
 import random
 import time
+import threading
 
 MAX_CAPACITY = 3
 TOTAL_VEHICLES = 5
-SEED = 333
-MIN_ARRIVAL_TIME = 0.2  # segundos
-MAX_ARRIVAL_TIME = 1  # segundos
+SEED = 33
+MIN_ARRIVAL_TIME = 0.1  # segundos
+MAX_ARRIVAL_TIME = 8  # segundos
 MIN_PARKING_TIME = 2  # segundos
 MAX_PARKING_TIME = 6  # segundos
+
+
+def calc_random_number(min_a_t, max_a_t, min_p_t, max_p_t):
+    arrival_t = random.uniform(min_a_t, max_a_t)
+    parking_t = random.randint(min_p_t, max_p_t)
+    return arrival_t, parking_t
 
 
 def calc_occupation_state(rate):
@@ -19,7 +26,6 @@ def calc_occupation_state(rate):
     else:
         state = "High"
     return state
-
 
 class ParkingLot:
     """representa un parqueadero con su capacidad, sus espacios ocupados y su registro de vehículos."""
@@ -76,19 +82,19 @@ def main():
     start = time.time()
     for current_vehicle in range(1, TOTAL_VEHICLES + 1):
         # Cualquier vehiculo llega antes de intentar estacionar, haya espacio o no.
-        time.sleep(random.uniform(MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME))
-        arrival_time = time.time() - start
-        random_parking_time = random.randint(MIN_PARKING_TIME, MAX_PARKING_TIME)
-        entered = parking_lot.park_vehicle(
-            current_vehicle, arrival_time, random_parking_time
+        arrival_delay, parking_time = calc_random_number(
+            MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME, MIN_PARKING_TIME, MAX_PARKING_TIME
         )
+        time.sleep(arrival_delay)
+        arrival_time = time.time() - start
+        entered = parking_lot.park_vehicle(current_vehicle, arrival_time, parking_time)
         if entered:
             print(
-                f"[{arrival_time:.2f}] Vehicle {current_vehicle} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {random_parking_time}"
+                f"[{arrival_time:.2f}] Vehicle {current_vehicle} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {parking_time}"
             )
         else:
             print(
-                f"[{arrival_time:.2f}] Vehicle {current_vehicle} doesn't enter, full parking lot | Parking time: {random_parking_time}"
+                f"[{arrival_time:.2f}] Vehicle {current_vehicle} doesn't enter, full parking lot | Parking time: {parking_time}"
             )
 
     print()
