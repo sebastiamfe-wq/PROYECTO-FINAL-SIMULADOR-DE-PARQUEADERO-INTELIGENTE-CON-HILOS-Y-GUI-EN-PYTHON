@@ -1,7 +1,3 @@
-"""SIMULADOR DE PARQUEADERO INTELIGENTE CON HILOS Y GUI EN PYTHON
-Proyecto final -> Arquitectura de Computadores y Sistemas Operativos
-"""
-
 import random
 import time
 
