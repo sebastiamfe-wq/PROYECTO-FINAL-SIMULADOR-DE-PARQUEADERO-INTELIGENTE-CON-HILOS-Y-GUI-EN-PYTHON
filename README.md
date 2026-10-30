@@ -1,64 +1,47 @@
-# Simulador de parqueadero inteligente
+# Simulador de parqueadero inteligente con Hilos y GUI en PYTHON
 
-[]
+Simula un parqueadero con espacios limitados haciendo analogia a un Sistema Operativo,cada vehiculo representa un proceso que compite por un recurso finito.La concurrencia se modela con hilos (threads) y la sincronizacion con Lock y Semaphore
 
 ## Características
 
-- []
-
-## Estado del proyecto
-
-- [x] [Lo que ya está terminado]
-- [ ] [Lo que falta]
+- La concurrencia se simula mediante hilos.
+- La sincronizacion se realiza mediante Locks y Semaforos que evitan condiciones de carrera.
+- La interfaz grafica muestra todo el proceso de acceder y liberar un espacio.
 
 ## Tecnologías
 
-- Python [versión]
-- Módulos de la biblioteca estándar: [los que usas]
-- Sin dependencias externas
+- Cada vehículo es un HILO independiente que llega, espera un espacio, se estaciona y sale.
+- Si el parqueadero está lleno, el vehículo queda bloqueado hasta que otro salga, controlado por un semáforo.
+- Un Lock garantiza la exclusión mutua sobre los datos compartidos y evita condiciones de carrera.
+- Interfaz gráfica que muestra en tiempo real los espacios disponibles y ocupados y el estado de cada vehículo.
+- Botones de control: Iniciar simulación, Agregar vehículo, Detener y Reiniciar.
+- Métricas al final de la simulación: tiempo promedio de espera y utilización del parqueadero.
+- El registro de cada simulacion queda registrado en un archivo .csv
+- Los resultados pueden ser reproducibles mediante una semilla fija.
 
 ## Instalación y uso
 
 1. Clonar el repositorio:
 
    ```bash
-   git clone [URL de tu repositorio]
+   git clone https://github.com/sebastiamfe-wq/PROYECTO-FINAL-SIMULADOR-DE-PARQUEADERO-INTELIGENTE-CON-HILOS-Y-GUI-EN-PYTHON.git
    ```
 
 2. Entrar a la carpeta:
 
    ```bash
-   cd [nombre de la carpeta]
+   cd PROYECTO-FINAL-SIMULADOR-DE-PARQUEADERO-INTELIGENTE-CON-HILOS-Y-GUI-EN-PYTHON
    ```
 
 3. Ejecutar:
 
    ```bash
-   python src/[nombre del archivo].py
+   python src/main.py
    ```
 
 ## Configuración
 
-Los parámetros de la simulación están al inicio del archivo:
-
-| Constante | Descripción | Valor por defecto |
-|---|---|---|
-| `MAX_CAPACITY` | [qué controla] | [valor] |
-| [una fila por constante] | | |
-
-## Analogía con sistemas operativos
-
-| Simulador | Sistema operativo |
-|---|---|
-| Vehículo | [qué representa] |
-| [una fila por concepto] | |
-
-## Estructura del proyecto
-
-```
-[el árbol de carpetas y archivos, como el que vimos antes]
-```
 
 ## Autor
 
-[Tu nombre] — [Materia y universidad]
+Juan Sebastian Jimenez Machado — Arquitectura se computadores y sistemas opertivos, Unoversidad EAN.
