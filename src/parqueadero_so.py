@@ -33,6 +33,8 @@ class ParkingLot:
 
     def __init__(self, capacity):
         """Crea un parqueadero y su registro vacios y se le asigna la capacidad por parametro"""
+        self.spaces = threading.Semaphore(capacity)
+        self.lock = threading.Lock()
         self.capacity = capacity
         self.occupied_spaces = 0
         self.vehicle_log = []
@@ -58,27 +60,29 @@ class ParkingLot:
 
     def park_vehicle(self, vehicle_id, arrival_time, parking_time):
         """Decide si el vehiculo entra o no y lo registra"""
-        if self.occupied_spaces < self.capacity:
+        vehicle = {
+            "vehicle_id": vehicle_id,
+            "state": "waiting",
+            "arrival_time": arrival_time,
+            "parking_time": parking_time,
+        }
+        with self.lock:
+            self.vehicle_log.append(vehicle)
+
+        self.spaces.acquire()
+
+        with self.lock:
             self.occupied_spaces += 1
-            vehicle_status = "parked"
-        else:
-            vehicle_status = "waiting"
-        self.vehicle_log.append(
-            {
-                "vehicle_id": vehicle_id,
-                "state": vehicle_status,
-                "arrival_time": arrival_time,
-                "parking_time": parking_time,
-            }
-        )
-        return vehicle_status == "parked"
+            vehicle["state"] = "parked"
 
     def pick_up_vehicle(self, vehicle_id):
-        for v in self.vehicle_log:
-            if v["vehicle_id"] == vehicle_id and v["state"] == "parked":
-                self.occupied_spaces -= 1
-                v["state"] = "left"
-                break
+        with self.lock:
+            for v in self.vehicle_log:
+                if v["vehicle_id"] == vehicle_id and v["state"] == "parked":
+                    self.occupied_spaces -= 1
+                    v["state"] = "left"
+                    self.spaces.release()
+                    break
 
 
 def vehicle_lifecycle(parking_lot, vehicle_id, arrival_delay, parking_time, start):
@@ -86,32 +90,35 @@ def vehicle_lifecycle(parking_lot, vehicle_id, arrival_delay, parking_time, star
     time.sleep(arrival_delay)
     arrival_time = time.time() - start
 
-    entered = parking_lot.park_vehicle(vehicle_id, arrival_time, parking_time)
-    if entered:
-        print(
-            f"[{arrival_time:.2f}] Vehicle {vehicle_id} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {parking_time}"
-        )
-        time.sleep(parking_time)
+    print(
+        f"[{arrival_time:.2f}] Vehicle {vehicle_id} arrives | Parking time: {parking_time}"
+    )
 
-        parking_lot.pick_up_vehicle(vehicle_id)
-        departure_time = time.time() - start
-        print(
-            f"[{departure_time:.2f}] Vehicle {vehicle_id} leaves | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()}"
-        )
-    else:
-        print(
-            f"[{arrival_time:.2f}] Vehicle {vehicle_id} doesn't enter, full parking lot | Parking time: {parking_time}"
-        )
+    parking_lot.park_vehicle(vehicle_id, arrival_time, parking_time)
+    entry_time = time.time() - start
+    waited = entry_time - arrival_time
+    print(
+        f"[{entry_time:.2f}] Vehicle {vehicle_id} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Waited: {waited:.2f}s"
+    )
+
+    time.sleep(parking_time)
+
+    parking_lot.pick_up_vehicle(vehicle_id)
+    departure_time = time.time() - start
+    print(
+        f"[{departure_time:.2f}] Vehicle {vehicle_id} leaves | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()}"
+    )
 
 
 def main():
     """Ejecuta la simulacion y muestra los resultados"""
+    start = time.time()
     parking_lot = ParkingLot(MAX_CAPACITY)
     random.seed(
         SEED
     )  # La semilla fija hace que cada ejecución produzca los mismos resultados.
-    start = time.time()
     threads = []
+
     for current_vehicle in range(1, TOTAL_VEHICLES + 1):
         arrival_delay, parking_time = calc_random_number(
             MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME, MIN_PARKING_TIME, MAX_PARKING_TIME
