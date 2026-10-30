@@ -1,0 +1,153 @@
+import random
+import time
+import threading
+
+MAX_CAPACITY = 3
+TOTAL_VEHICLES = 5
+SEED = 33
+MIN_ARRIVAL_TIME = 0.1  # segundos
+MAX_ARRIVAL_TIME = 8  # segundos
+MIN_PARKING_TIME = 2  # segundos
+MAX_PARKING_TIME = 6  # segundos
+
+
+def calc_random_number(min_a_t, max_a_t, min_p_t, max_p_t):
+    arrival_t = random.uniform(min_a_t, max_a_t)
+    parking_t = random.randint(min_p_t, max_p_t)
+    return arrival_t, parking_t
+
+
+def calc_occupation_state(rate):
+    """Clasifica el porcentaje de ocupacion en: low, medium, high"""
+    if rate < 50:
+        state = "Low"
+    elif rate < 90:
+        state = "Medium"
+    else:
+        state = "High"
+    return state
+
+
+class ParkingLot:
+    """representa un parqueadero con su capacidad, sus espacios ocupados y su registro de vehículos."""
+
+    def __init__(self, capacity):
+        """Crea un parqueadero y su registro vacios y se le asigna la capacidad por parametro"""
+        self.spaces = threading.Semaphore(capacity)
+        self.lock = threading.Lock()
+        self.capacity = capacity
+        self.occupied_spaces = 0
+        self.vehicle_log = []
+
+    def calc_availability(self):
+        """Retorna los espacios disponibles"""
+        return self.capacity - self.occupied_spaces
+
+    def calc_occupation_rate(self):
+        """Devuelve el porcentaje de ocupación (0 a 100). Si la capacidad es 0, devuelve 0."""
+        if self.capacity == 0:
+            return 0
+        rate = (self.occupied_spaces / self.capacity) * 100
+        return rate
+
+    def calc_vehicles_waiting(self):
+        """Cuenta cuantos vehiculos del registro estan esperando"""
+        waiting = 0
+        for v in self.vehicle_log:
+            if v["state"] == "waiting":
+                waiting += 1
+        return waiting
+
+    def park_vehicle(self, vehicle_id, arrival_time, parking_time):
+        """Decide si el vehiculo entra o no y lo registra"""
+        vehicle = {
+            "vehicle_id": vehicle_id,
+            "state": "waiting",
+            "arrival_time": arrival_time,
+            "parking_time": parking_time,
+        }
+        with self.lock:
+            self.vehicle_log.append(vehicle)
+
+        self.spaces.acquire()
+
+        with self.lock:
+            self.occupied_spaces += 1
+            vehicle["state"] = "parked"
+
+    def pick_up_vehicle(self, vehicle_id):
+        with self.lock:
+            for v in self.vehicle_log:
+                if v["vehicle_id"] == vehicle_id and v["state"] == "parked":
+                    self.occupied_spaces -= 1
+                    v["state"] = "left"
+                    self.spaces.release()
+                    break
+
+
+def vehicle_lifecycle(parking_lot, vehicle_id, arrival_delay, parking_time, start):
+    """Simula la vida de un vehiculo o hilo llega estaciona un tiempo y sale."""
+    time.sleep(arrival_delay)
+    arrival_time = time.time() - start
+
+    print(
+        f"[{arrival_time:.2f}] Vehicle {vehicle_id} arrives | Parking time: {parking_time}"
+    )
+
+    parking_lot.park_vehicle(vehicle_id, arrival_time, parking_time)
+    entry_time = time.time() - start
+    waited = entry_time - arrival_time
+    print(
+        f"[{entry_time:.2f}] Vehicle {vehicle_id} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Waited: {waited:.2f}s"
+    )
+
+    time.sleep(parking_time)
+
+    parking_lot.pick_up_vehicle(vehicle_id)
+    departure_time = time.time() - start
+    print(
+        f"[{departure_time:.2f}] Vehicle {vehicle_id} leaves | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()}"
+    )
+
+
+def main():
+    """Ejecuta la simulacion y muestra los resultados"""
+    start = time.time()
+    parking_lot = ParkingLot(MAX_CAPACITY)
+    random.seed(
+        SEED
+    )  # La semilla fija hace que cada ejecución produzca los mismos resultados.
+    threads = []
+
+    for current_vehicle in range(1, TOTAL_VEHICLES + 1):
+        arrival_delay, parking_time = calc_random_number(
+            MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME, MIN_PARKING_TIME, MAX_PARKING_TIME
+        )
+        thread = threading.Thread(
+            target=vehicle_lifecycle,
+            args=(parking_lot, current_vehicle, arrival_delay, parking_time, start),
+        )
+        threads.append(thread)
+
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    print()
+    for vehicle in parking_lot.vehicle_log:
+        print(f"Vehicle {vehicle['vehicle_id']}: {vehicle['state']}")
+    print()
+
+    occupation_rate = parking_lot.calc_occupation_rate()
+    occupation_state = calc_occupation_state(occupation_rate)
+    print(
+        f"Capacity: {parking_lot.capacity} | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Occupation: {occupation_state}({occupation_rate:.1f}%) | Waiting: {parking_lot.calc_vehicles_waiting()}",
+        end="\n\n",
+    )
+    total_simulation_time = time.time() - start
+    print(f"Simulation:{total_simulation_time:.2f}")
+
+
+if __name__ == "__main__":
+    main()
