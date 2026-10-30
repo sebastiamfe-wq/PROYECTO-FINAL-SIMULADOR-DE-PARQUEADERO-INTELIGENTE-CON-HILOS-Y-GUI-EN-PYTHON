@@ -86,7 +86,7 @@ class ParkingLot:
 
 
 def vehicle_lifecycle(parking_lot, vehicle_id, arrival_delay, parking_time, start):
-    """Simula la vida de un vehículo: llega, intenta estacionar, se queda y sale."""
+    """Simula la vida de un vehiculo o hilo llega estaciona un tiempo y sale."""
     time.sleep(arrival_delay)
     arrival_time = time.time() - start
 
