@@ -27,6 +27,7 @@ def calc_occupation_state(rate):
         state = "High"
     return state
 
+
 class ParkingLot:
     """representa un parqueadero con su capacidad, sus espacios ocupados y su registro de vehículos."""
 
@@ -72,6 +73,36 @@ class ParkingLot:
         )
         return vehicle_status == "parked"
 
+    def pick_up_vehicle(self, vehicle_id):
+        for v in self.vehicle_log:
+            if v["vehicle_id"] == vehicle_id and v["state"] == "parked":
+                self.occupied_spaces -= 1
+                v["state"] = "left"
+                break
+
+
+def vehicle_lifecycle(parking_lot, vehicle_id, arrival_delay, parking_time, start):
+    """Simula la vida de un vehículo: llega, intenta estacionar, se queda y sale."""
+    time.sleep(arrival_delay)
+    arrival_time = time.time() - start
+
+    entered = parking_lot.park_vehicle(vehicle_id, arrival_time, parking_time)
+    if entered:
+        print(
+            f"[{arrival_time:.2f}] Vehicle {vehicle_id} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {parking_time}"
+        )
+        time.sleep(parking_time)
+
+        parking_lot.pick_up_vehicle(vehicle_id)
+        departure_time = time.time() - start
+        print(
+            f"[{departure_time:.2f}] Vehicle {vehicle_id} leaves | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()}"
+        )
+    else:
+        print(
+            f"[{arrival_time:.2f}] Vehicle {vehicle_id} doesn't enter, full parking lot | Parking time: {parking_time}"
+        )
+
 
 def main():
     """Ejecuta la simulacion y muestra los resultados"""
@@ -80,22 +111,21 @@ def main():
         SEED
     )  # La semilla fija hace que cada ejecución produzca los mismos resultados.
     start = time.time()
+    threads = []
     for current_vehicle in range(1, TOTAL_VEHICLES + 1):
-        # Cualquier vehiculo llega antes de intentar estacionar, haya espacio o no.
         arrival_delay, parking_time = calc_random_number(
             MIN_ARRIVAL_TIME, MAX_ARRIVAL_TIME, MIN_PARKING_TIME, MAX_PARKING_TIME
         )
-        time.sleep(arrival_delay)
-        arrival_time = time.time() - start
-        entered = parking_lot.park_vehicle(current_vehicle, arrival_time, parking_time)
-        if entered:
-            print(
-                f"[{arrival_time:.2f}] Vehicle {current_vehicle} enters | Occupied: {parking_lot.occupied_spaces} | Availability: {parking_lot.calc_availability()} | Parking time: {parking_time}"
-            )
-        else:
-            print(
-                f"[{arrival_time:.2f}] Vehicle {current_vehicle} doesn't enter, full parking lot | Parking time: {parking_time}"
-            )
+        thread = threading.Thread(
+            target=vehicle_lifecycle,
+            args=(parking_lot, current_vehicle, arrival_delay, parking_time, start),
+        )
+        threads.append(thread)
+
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
 
     print()
     for vehicle in parking_lot.vehicle_log:
