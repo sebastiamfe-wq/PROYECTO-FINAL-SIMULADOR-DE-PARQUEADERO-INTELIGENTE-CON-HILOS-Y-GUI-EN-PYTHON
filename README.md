@@ -41,6 +41,7 @@ Simula un parqueadero con espacios limitados haciendo analogia a un Sistema Oper
 
 ## Configuración
 
+Puedes ajustar la configuracion de la simulacion editando los parametros en config.py
 
 ## Autor
 

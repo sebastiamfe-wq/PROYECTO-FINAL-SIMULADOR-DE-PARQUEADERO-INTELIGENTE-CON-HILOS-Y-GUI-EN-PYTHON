@@ -37,10 +37,15 @@ class ParkingLot:
     def calc_vehicles_waiting(self):
         """Cuenta cuantos vehiculos del registro estan esperando"""
         waiting = 0
-        for v in self.vehicle_log:
-            if v["state"] == "waiting":
-                waiting += 1
+        with self.lock:
+            for v in self.vehicle_log:
+                if v["state"] == "waiting":
+                    waiting += 1
         return waiting
+
+    def get_vehicles(self):
+        with self.lock:
+            return list(self.vehicle_log)
 
     def park_vehicle(self, vehicle_id, arrival_time, parking_time):
         """Decide si el vehiculo entra o no y lo registra"""
